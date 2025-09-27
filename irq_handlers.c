@@ -24,8 +24,7 @@
 #include "mc_interface.h"
 #include "mcpwm_foc.h"
 #include "hw.h"
-#include "encoder/encoder.h"
-#include "main.h"
+#include "encoder.h"
 
 CH_IRQ_HANDLER(ADC1_2_3_IRQHandler) {
 	CH_IRQ_PROLOGUE();
@@ -36,7 +35,7 @@ CH_IRQ_HANDLER(ADC1_2_3_IRQHandler) {
 
 CH_IRQ_HANDLER(HW_ENC_EXTI_ISR_VEC) {
 	if (EXTI_GetITStatus(HW_ENC_EXTI_LINE) != RESET) {
-		encoder_pin_isr();
+		encoder_reset();
 
 		// Clear the EXTI line pending bit
 		EXTI_ClearITPendingBit(HW_ENC_EXTI_LINE);
@@ -72,24 +71,4 @@ CH_IRQ_HANDLER(PVD_IRQHandler) {
 		EXTI_ClearITPendingBit(EXTI_Line16);
 		EXTI_ClearFlag(EXTI_Line16);
 	}
-}
-
-CH_IRQ_HANDLER(NMI_Handler) {
-	main_stop_motor_and_reset();
-}
-
-CH_IRQ_HANDLER(HardFault_Handler) {
-	main_stop_motor_and_reset();
-}
-
-CH_IRQ_HANDLER(MemManage_Handler) {
-	main_stop_motor_and_reset();
-}
-
-CH_IRQ_HANDLER(BusFault_Handler) {
-	main_stop_motor_and_reset();
-}
-
-CH_IRQ_HANDLER(UsageFault_Handler) {
-	main_stop_motor_and_reset();
 }

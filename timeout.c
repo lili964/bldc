@@ -21,7 +21,6 @@
 #include "mc_interface.h"
 #include "stm32f4xx_conf.h"
 #include "shutdown.h"
-#include "utils.h"
 
 // Private variables
 static volatile bool init_done = false;
@@ -31,7 +30,6 @@ static volatile float timeout_brake_current;
 static volatile KILL_SW_MODE timeout_kill_sw_mode;
 static volatile bool has_timeout;
 static volatile bool kill_sw_active;
-static volatile bool kill_sw_ext_set = false;
 static volatile uint32_t feed_counter[MAX_THREADS_MONITOR];
 
 // Threads
@@ -90,15 +88,11 @@ void timeout_configure(systime_t timeout, float brake_current, KILL_SW_MODE kill
 }
 
 void timeout_reset(void) {
-	last_update_time = chVTGetSystemTimeX();
+	last_update_time = chVTGetSystemTime();
 }
 
 bool timeout_has_timeout(void) {
 	return has_timeout;
-}
-
-float timeout_secs_since_update(void) {
-	return UTILS_AGE_S(last_update_time);
 }
 
 bool timeout_kill_sw_active(void) {
@@ -115,10 +109,6 @@ float timeout_get_brake_current(void) {
 
 KILL_SW_MODE timeout_get_kill_sw_mode(void) {
 	return timeout_kill_sw_mode;
-}
-
-void timeout_set_kill_sw_ext(bool kill_set) {
-	kill_sw_ext_set = kill_set;
 }
 
 void timeout_feed_WDT(uint8_t index) {
@@ -216,10 +206,6 @@ static THD_FUNCTION(timeout_thread, arg) {
 
 		default:
 			break;
-		}
-
-		if (kill_sw_ext_set) {
-			kill_sw = true;
 		}
 
 		if (kill_sw || (timeout_msec != 0 && chVTTimeElapsedSinceX(last_update_time) > MS2ST(timeout_msec))) {
